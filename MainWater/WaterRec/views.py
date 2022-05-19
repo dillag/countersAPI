@@ -181,18 +181,9 @@ class NewAndLastMetersData(APIView):
 
     def get(self, request, id_counter):
         print(request.user, request.auth)
-        profile = Profile.objects.get(user=request.user)
-        counter = Counter.objects.get(id_counter=id_counter)
-        if counter.isclever:
-            api_body_request = "https://lk.waviot.ru/api.data/get_values/?modem_id=" + counter.id_modem
-            api_key = "&key=" + profile.api_key
-            main_request = requests.get(api_body_request+api_key)
-            last_value = int(json.loads(main_request.text)["registrators"][str(counter.id_registrator)]["values"][-1]["value"])
-            return Response(status=200, data={"Metersdata": {"id_counter": counter.id_counter, "user_id": str(counter.user_id), "value": str(last_value)}})
-        else:
-            rec = MetersData.objects.filter(id_counter=id_counter).last()
-            serializer = MetersDataSerializer(rec)
-            return Response(status=200, data={"Metersdata": serializer.data})
+        rec = MetersData.objects.filter(id_counter=id_counter).last()
+        serializer = MetersDataSerializer(rec)
+        return Response(status=200, data={"Metersdata": serializer.data})
 
     def post(self, request, id_counter):
         print(request.user, request.data)
