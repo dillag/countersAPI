@@ -42,7 +42,7 @@ class Counter(models.Model):
 class MetersData(models.Model):
     id_counter = models.ForeignKey(Counter, on_delete=models.CASCADE)
     user_id = models.ForeignKey(User, on_delete=models.CASCADE)
-    date = models.DateTimeField(auto_now=True)
+    date = models.DateTimeField()
     value = models.CharField(default="00000", max_length=6)
 
     def __str__(self):
