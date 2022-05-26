@@ -6,6 +6,7 @@ from celery import Celery, shared_task
 from celery.utils.log import get_task_logger
 # 1-s terminal celery -A MainWater beat
 # 2-s terminal celery -A MainWater worker
+# 3-s terminal redis-server --port 7777
 import requests
 
 from .models import *

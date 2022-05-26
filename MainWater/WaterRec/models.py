@@ -43,7 +43,9 @@ class MetersData(models.Model):
     id_counter = models.ForeignKey(Counter, on_delete=models.CASCADE)
     user_id = models.ForeignKey(User, on_delete=models.CASCADE)
     date = models.DateTimeField()
+    year = models.CharField(default="2022", max_length=4)
     value = models.CharField(default="00000", max_length=6)
+    water_flow = models.IntegerField(default=0)
 
     def __str__(self):
         return str(self.value)
