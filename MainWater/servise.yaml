@@ -1,0 +1,54 @@
+openapi: 3.0.0
+info:
+  title: Water API
+  description:
+  version: 0.1.9
+
+servers:
+  - url: http://134.0.113.72:7777/water/
+    description: Optional server description, e.g. Main (production) server
+  - url: https://26ac-178-76-226-214.eu.ngrok.io/water/
+    description: Optional server description, e.g. Internal staging server for testing
+
+paths:
+  /counters:
+    get:
+      summary: Returns a service.
+      description:
+      responses:
+        '200':
+          description: A service object.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  service:
+                    type: string
+                  description:
+                    type: string
+                  user_id:
+                    type: string
+                  pk:
+                    type: integer
+                  DateTime:
+                    type: datatime
+        '403':
+          description: Incorrect data entry.
+        '404':
+            description: Was not found.
+        default:
+            description: Unexpected error
+    post:
+      summary: Creates a service.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                service:
+                  type: string
+                description:
+                    type: string
