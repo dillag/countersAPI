@@ -13,6 +13,8 @@ urlpatterns = [
     path('service/', views.ServiceRecord.as_view(), name='service'),
     path('counters/', views.Counters.as_view(), name='counters'),
     path('meterdata/<int:id_counter>', views.NewAndLastMetersData.as_view(), name='meterdata'),
+    path('ciclediagrams/<int:period>', views.CicleDiagrams.as_view(), name='ciclediagrams'),
+    path('purplediagrams/', views.PurpleDiagrams.as_view(), name='purplediagrams'),
 
 
 ]

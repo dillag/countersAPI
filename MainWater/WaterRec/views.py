@@ -37,35 +37,40 @@ for user in User.objects.all():
     print(user.username)
     print(a)
 
-
 @csrf_exempt
 def recievephoto(request):
-    # Get image from request and decode from base64
     rawimage = request.POST.get('search')
+    print("len is", len(rawimage))
     norawimage = base64.b64decode(rawimage)
-    # Convert Image Bytes To Img
+    print("len is", len(norawimage))
     stream = BytesIO(norawimage)
     image = Image.open(stream).convert("RGBA")
     stream.close()
-    # Predict first model
+    image = image.resize((480, 640), Image.ANTIALIAS)
     firsttime = time.time()
     results = model(image)
     results.show()
-    detect_res = results.pandas().xyxy[0]
-    # Crop image with coord after first model
-    cropped_image = image.crop(
-        (int(detect_res['xmin']), int(detect_res['ymin']), int(detect_res['xmax']), int(detect_res['ymax'])))
-    # Predict second model
+    if results:
+        detect_res = results.pandas().xyxy[0]
+        print(detect_res)
+        cropped_image = image.crop(
+            (int(detect_res['xmin']), int(detect_res['ymin']), int(detect_res['xmax']), int(detect_res['ymax'])))
+    else:
+        return JsonResponse({"555": "00000"}, safe=False, status=status.HTTP_200_OK)
     results_numbers = model2(cropped_image)
     results_numbers.show()
-    # Sort result
-    test_detect_res = results_numbers.pandas().xyxy[0]
-    test_detect_res = test_detect_res.sort_values(by=['xmin'])
-    final_answer = "".join(list(test_detect_res['name']))
-    print((time.time() - firsttime))
-    print(final_answer)
-
-    return JsonResponse({"555": final_answer}, safe=False, status=status.HTTP_200_OK)
+    if results_numbers:
+        test_detect_res = results_numbers.pandas().xyxy[0]
+        test_detect_res = test_detect_res.sort_values(by=['xmin'])
+        final_answer = "".join(list(test_detect_res['name']))
+        print((time.time() - firsttime))
+        print(final_answer)
+        if len(final_answer) > 5:
+            print("its time to cut")
+            final_answer = final_answer[:5]
+        return JsonResponse({"555": final_answer}, safe=False, status=status.HTTP_200_OK)
+    else:
+        return JsonResponse({"555": "00000"}, safe=False, status=status.HTTP_200_OK)
 
 
 class Login(APIView):
@@ -77,7 +82,8 @@ class Login(APIView):
             return Response(status=200, data={"token": str(Token.objects.get(user=user)),
                                               "fullname": str(profile.fullname),
                                               "place": str(profile.place),
-                                              "number_phone": str(profile.number_phone)})
+                                              "number_phone": str(profile.number_phone),
+                                              "day_of_metersdata": str(profile.day_of_metersdata)})
         else:
             return Response(status=403, data={"message": "Неправильный ввод данных"})
 
@@ -244,18 +250,28 @@ class PurpleDiagrams(APIView):
     permission_classes = (IsAuthenticated,)
 
     def get(self, request):
-        print(request.user, request.auth)
-        mass_month = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь",
-                      "Ноябрь", "Декабрь"]
-        result = {"Январь": 0, "Февраль": 0, "Март": 0, "Апрель": 0, "Май": 0, "Июнь": 0, "Июль": 0, "Август": 0,
-                  "Сентябрь": 0, "Октябрь": 0,
-                  "Ноябрь": 0, "Декабрь": 0}
+        result = {"January": 0, "February": 0, "March": 0, "April": 0, "May": 0, "June": 0, "July": 0, "August": 0,
+                  "September": 0, "October": 0,
+                  "November": 0, "December": 0}
         all_counters = Counter.objects.filter(user_id=request.user)
         this_year = datetime.now().year
         for counter in all_counters:
             counters_value = MetersData.objects.filter(id_counter=counter, user_id=request.user, year=this_year).values(
                 "water_flow", "date")
             for value in counters_value:
-                result[mass_month[value['date'].month - 1]] += float(value['water_flow'])
+                result[value["date"].strftime("%B")] += float(value['water_flow'])
         return Response(status=200, data={"result": result})
 
+class LineDiagrams(APIView):
+    authentication_classes = [SessionAuthentication, BasicAuthentication, TokenAuthentication]
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request, counter):
+        this_counter = Counter.objects.get(user_id=request.user, id_counter=counter)
+        this_year = datetime.now().year
+        result = {}
+        counters_value = MetersData.objects.filter(id_counter=this_counter, user_id=request.user, year=this_year).values(
+            "water_flow", "date")
+        for value in counters_value:
+            result[value["date"].strftime("%B")] = value["water_flow"]
+        return Response(status=200, data={"result": result})
