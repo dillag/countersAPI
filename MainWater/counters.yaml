@@ -1,0 +1,74 @@
+openapi: 3.0.0
+info:
+  title: Water API
+  description:
+  version: 0.1.9
+
+servers:
+  - url: http://134.0.113.72:7777/water/
+    description: Optional server description, e.g. Main (production) server
+  - url: https://26ac-178-76-226-214.eu.ngrok.io/water/
+    description: Optional server description, e.g. Internal staging server for testing
+
+paths:
+  /counters:
+    get:
+      summary: Returns a counters.
+      description:
+      responses:
+        '200':
+          description: A counter object.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id_counter:
+                    type: integer
+                    format: int64
+                    example: 1
+                  typewater:
+                    type: integer
+                    format: int64
+                    example: 0
+                  user_id:
+                    type: string
+                    example: "test"
+                  isclever:
+                    type: bool
+                    example: true
+                  id_modem:
+                    type: string
+                    example: "1256"
+                  id_registrator:
+                    type: string
+                    example: "4578"
+        '403':
+          description: Incorrect data entry.
+        '404':
+            description: Was not found.
+        default:
+            description: Unexpected error
+    post:
+      summary: Creates a count.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id_counter:
+                  type: integer
+                  format: int64
+                  typewater:
+                    type: integer
+                    example: 0
+                  user_id:
+                    type: string
+                  isclever:
+                    type: bool
+                  id_modem:
+                    type: string
+                  id_registrator:
+                    type: string
